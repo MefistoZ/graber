@@ -1,5 +1,6 @@
 import pyautogui
 import time
+import re
 from sys import argv
 from bs4 import BeautifulSoup as Bs
 from selenium import webdriver
@@ -66,35 +67,22 @@ def get_urls(file_path):
     # urls_list.insert(0, URL)
     return urls_list
 
-
-# Скачивание страницы
-def download_page(url):
-    driver = webdriver.Chrome()
-    driver.get(url)
-    time.sleep(4)
-    pyautogui.hotkey('ctrl', 's')
-    time.sleep(2)
-    pyautogui.press('enter')
-    time.sleep(30)
-    driver.close()
-    driver.quit()
-
-
 def store_link():
     urls = get_urls('urls_' + POSTFIX + '.txt')
     if urls:
         for url in urls:
-            get_source_html(URL + url)
-            get_items_urls('source_' + POSTFIX + '.html')
-            with open('parsed_urls_' + POSTFIX + '.txt', 'a', encoding="utf-8") as file:
-                file.write(f"{url}\n")
+            if url.find('form') == -1 and url.find('npd-doc') == -1:
+                get_source_html(URL + url)
+                get_items_urls('source_' + POSTFIX + '.html')
+                with open('parsed_urls_' + POSTFIX + '.txt', 'a', encoding="utf-8") as file:
+                    file.write(f"{url}\n")
     else:
         return '[ERROR] Нет ссылок в файле urls_' + POSTFIX + '.txt'
 
 
 # Проверка валидности ссылок
 def hrefCheck(href):
-    notAllowLinks = ['https', 'http', 'articleprint', 'viewpdf', 'e-profkiosk', 'question', 'mailto', 'tel', 'toword']
+    notAllowLinks = ['https', 'http', 'articleprint', 'viewpdf', 'e-profkiosk', 'question', 'mailto', 'tel', 'toword', 'technicalrequirements']
     for link in notAllowLinks:
         if href.find(link) != -1:
             return False
@@ -104,7 +92,8 @@ def hrefCheck(href):
 # Инициализация файлов
 def init_file():
     # Файл в котором содержатся уникальные ссылки по котором будет происходить скачивание сайта
-    open('urls_' + POSTFIX + '.txt',  'a+', encoding="utf-8")
+    with open('urls_' + POSTFIX + '.txt',  'a+', encoding="utf-8") as urls:
+        urls.write(f"/\n")
 
     # Файл в который записывается каждая проверенная ссылка (на случай ошибки скрипта мы знаем на какой ссылке остановился скрипт)
     open('parsed_urls_' + POSTFIX + '.txt',  'a+', encoding="utf-8")
@@ -114,18 +103,43 @@ def init_file():
 
 def store_page():
     urls = get_urls('urls_' + POSTFIX + '.txt')
-    urls.insert(0, '/')
-    print(urls)
+    # urls.insert(0, '/')
     if urls:
         for url in urls:
             driver = webdriver.Chrome()
+            name = url.replace('/', '')
             try:
                 driver.get(URL + url)
-                time.sleep(4)
+                time.sleep(8)
+                # Страницы которые требуют авторизацию
+                if url.find('npd-doc') != -1 and url.find('form') != -1:
+                    name = re.sub(r"[^a-zA-Z0-9]", "", url)
+                    # Кнопка авторизации
+                    time.sleep(2)
+                    driver.find_element(By.CLASS_NAME, 'authButtonStyles__button--1dkY7').click()
+                    time.sleep(3)
+                    # Переключение фокуса окна
+                    driver.switch_to.window(driver.window_handles[1])
+
+                    # Находим логин и пароль и вводим данные авторизации
+                    driver.find_element(By.NAME, 'Login').send_keys("vmefistoz@gmail.com")
+                    driver.find_element(By.NAME, 'Pass').send_keys("123456")
+                    time.sleep(1)
+
+                    # Сабмитим форму авторизации
+                    submit = driver.find_element(By.ID, 'rx-form-submit')
+                    submit.click()
+                    time.sleep(3)
+
+                # Сохранение страницы
                 pyautogui.hotkey('ctrl', 's')
+                time.sleep(2)
+                if name:
+                    pyautogui.typewrite(name + '.html', 0.05)
                 time.sleep(2)
                 pyautogui.press('enter')
                 time.sleep(40)
+                driver.switch_to.window(driver.window_handles[0])
                 # Сохранение обработанных сылок
                 with open('downloaded_page_' + POSTFIX + '.txt', 'a', encoding="utf-8") as page:
                     page.write(f"{url}\n")
