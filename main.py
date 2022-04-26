@@ -5,9 +5,13 @@ from bs4 import BeautifulSoup as Bs
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
+# 1. Запуск на сбор ссылок с сайта
+# "py main.py https://esop.mcfr.ua esop links"
+# ссылка на главную страницу сайта - обязательно без слеша на конце ссылки
+# esop - постфикс для название файлов (можно выбрать произвольное название)
+# links - Праметр запуска. links - запуск на сбор ссылок, store - на сохранение страниц
 
 # 1. если пользователь зарегистрирован - видит другой контент
-# 1. Передавать аргументы в скрипт
 
 # Ссылка на главную сайта
 URL = argv[1]
@@ -121,7 +125,7 @@ def store_page():
                 pyautogui.hotkey('ctrl', 's')
                 time.sleep(2)
                 pyautogui.press('enter')
-                time.sleep(5)
+                time.sleep(40)
                 # Сохранение обработанных сылок
                 with open('downloaded_page_' + POSTFIX + '.txt', 'a', encoding="utf-8") as page:
                     page.write(f"{url}\n")
