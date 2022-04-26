@@ -82,6 +82,7 @@ def store_link():
 
 # Проверка валидности ссылок
 def hrefCheck(href):
+    href = href.lower()
     notAllowLinks = ['https', 'http', 'articleprint', 'viewpdf', 'e-profkiosk', 'question', 'mailto', 'tel', 'toword', 'TechnicalRequirements']
     for link in notAllowLinks:
         if href.find(link) != -1:
