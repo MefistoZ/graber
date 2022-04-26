@@ -82,7 +82,7 @@ def store_link():
 
 # Проверка валидности ссылок
 def hrefCheck(href):
-    notAllowLinks = ['https', 'http', 'articleprint', 'viewpdf', 'e-profkiosk', 'question', 'mailto', 'tel', 'toword', 'technicalrequirements']
+    notAllowLinks = ['https', 'http', 'articleprint', 'viewpdf', 'e-profkiosk', 'question', 'mailto', 'tel', 'toword', 'TechnicalRequirements']
     for link in notAllowLinks:
         if href.find(link) != -1:
             return False
@@ -92,8 +92,7 @@ def hrefCheck(href):
 # Инициализация файлов
 def init_file():
     # Файл в котором содержатся уникальные ссылки по котором будет происходить скачивание сайта
-    with open('urls_' + POSTFIX + '.txt',  'a+', encoding="utf-8") as urls:
-        urls.write(f"/\n")
+    open('urls_' + POSTFIX + '.txt',  'a+', encoding="utf-8")
 
     # Файл в который записывается каждая проверенная ссылка (на случай ошибки скрипта мы знаем на какой ссылке остановился скрипт)
     open('parsed_urls_' + POSTFIX + '.txt',  'a+', encoding="utf-8")
