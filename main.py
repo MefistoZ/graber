@@ -56,7 +56,7 @@ def get_items_urls(file_path):
         for url in urls:
             file.write(f"{url}\n")
 
-    return "[INFO] Urls collect successful"
+    return urls
 
 
 def get_urls(file_path):
@@ -69,11 +69,15 @@ def store_link():
     urls = get_urls('urls_' + POSTFIX + '.txt')
     if urls:
         for url in urls:
-            if url.find('form') == -1 and url.find('npd-doc') == -1:
+            if url.find('form') == -1 and url.find('npd-doc') == -1 and url.find('mid') == -1 and url.find('promo.aspx?tab=buy-site') == -1:
                 get_source_html(URL + url)
-                get_items_urls('source_' + POSTFIX + '.html')
+                new_links = get_items_urls('source_' + POSTFIX + '.html')
                 with open('parsed_urls_' + POSTFIX + '.txt', 'a', encoding="utf-8") as file:
                     file.write(f"{url}\n")
+
+                # Дополняем массив сслок новыми ссылками для последующего парсинга
+                for link in new_links:
+                    urls.append(link)
     else:
         return '[ERROR] Нет ссылок в файле urls_' + POSTFIX + '.txt'
 
@@ -81,7 +85,7 @@ def store_link():
 # Проверка валидности ссылок
 def hrefCheck(href):
     href = href.lower()
-    notAllowLinks = ['https', 'http', 'articleprint', 'viewpdf', 'e-profkiosk', 'question', 'mailto', 'tel', 'toword', 'TechnicalRequirements']
+    notAllowLinks = ['https', 'http', 'articleprint', 'viewpdf', 'e-profkiosk', 'question', 'mailto', 'tel', 'toword', 'technicalrequirements', 'Technicalrequirements', 'faq', 'Faq', 'группа по умолчанию не задана!', 'Группа по умолчанию не задана!' ]
     for link in notAllowLinks:
         if href.find(link) != -1:
             return False
